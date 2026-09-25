@@ -40,6 +40,7 @@ int get_input(void) {
             */
             if ((parsed_input >= 0 && parsed_input <= 7) && (*endptr == '\n' || *endptr == '\0')){ // Uses '' as "" references a string
                 free(line);
+                submenu++;
                 return (int)parsed_input;   
             }else{
                 printf("Inputed value is not allowed (!= 0-7) or contains garbage (extra characters), try again...");
