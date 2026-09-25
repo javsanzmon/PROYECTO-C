@@ -14,9 +14,14 @@ int get_input(void) {
 
     while(1){ // Loop always runs, stopped/continued with return/continue
         char_read = getline(&line, &len, stdin);
-        if (char_read == -1){
+        if (char_read == -1){ // getline always outputs -1 on error or EOF, so we use feof to distinguish the two cases
             free(line);
-            exit(EXIT_FAILURE);
+            if (feof(stdin)){
+                return (int)0;
+            }else{ // edge case just in case
+                printf("An error occurred during getline initialization, exiting...");
+                exit(EXIT_FAILURE);
+            }
         }
         errno = 0;
         parsed_input = strtol(line, &endptr, 10);
