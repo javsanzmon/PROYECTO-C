@@ -1,54 +1,60 @@
-#include  "input_usr.h"
+#include "input_usr.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
 #include <errno.h>
 
-int get_input(void) {
+struct output get_input(void) {
     // Variable initialization
     char *line = NULL; // User input
     size_t len = 0; // Buffer size
     ssize_t char_read; // Read characters, returns -1 on error
-    long parsed_input = 0; // Output of function
+    long parsed_input; // Output of function
     char *endptr; // Points to the last processed character in strtol
+    struct output result; 
 
-    while(1){ // Loop always runs, stopped/continued with return/continue
-        char_read = getline(&line, &len, stdin);
-        if (char_read == -1){ // getline always outputs -1 on error or EOF, so we use feof to distinguish the two cases
-            free(line);
-            if (feof(stdin)){
-                return (int)0;
-            }else{ // edge case just in case
-                printf("An error occurred during getline initialization, exiting...");
-                exit(EXIT_FAILURE);
-            }
-        }
-        errno = 0;
-        parsed_input = strtol(line, &endptr, 10);
-        if (endptr == line) {
-            printf("No parseable digits were found, try again...\n");
-            continue; // strtol couldn't find any parseable digit, asks again for input
-        }else if (errno == ERANGE && (parsed_input == LONG_MAX || parsed_input == LONG_MIN) || (errno != 0 && parsed_input == 0)){
-            // overflow state, errno = ERANGE and we ask for input again
-            printf("Input overflowed (string is either too big/small), try again...");
-            continue;
+    char_read = getline(&line, &len, stdin);
+    if (char_read == -1){ // getline always outputs -1 on error or EOF, so we use feof to distinguish the two cases
+        free(line);
+        result.num = -1;
+        if (feof(stdin)){
+            result.error_code = USER_EOF;
+            return result;
         }else{
-            /*
-            strtol outputs 0 if it doesn't parse any digit, meaning it
-            could be confused with the user input 0 (exit program).
-            So we check directly if strtol has done anything by comparing with endptr.
-            */
-            if ((parsed_input >= 0 && parsed_input <= 7) && (*endptr == '\n' || *endptr == '\0')){ // Uses '' as "" references a string
-                free(line);
-                submenu++;
-                return (int)parsed_input;   
-            }else{
-                printf("Inputed value is not allowed (!= 0-7) or contains garbage (extra characters), try again...");
-                continue;
-            }
-           
-        } 
-        
+            result.error_code = GETLINE_RUN_ERROR;
+            return result;
+        }
     }
+    errno = 0;
+    parsed_input = strtol(line, &endptr, 10);
+
+    /*
+    strtol outputs 0 if it doesn't parse any digit, meaning it
+    could be confused with the user input 0 (exit program).
+    So we check directly if strtol has done anything by comparing endptr with line.
+    */
+
+    if (endptr == line) {
+        free(line);
+        result.num = -1;
+        result.error_code = STRTOL_RUN_ERROR;
+        return result;
+    }else if (errno == ERANGE && (parsed_input == LONG_MAX || parsed_input == LONG_MIN) || (errno != 0 && parsed_input == 0)){
+        free(line);
+        result.num = -1;
+        result.error_code = OVERFLOW;
+        return result;
+    }else{
+        free(line);
+        if (*endptr == '\n' || *endptr == '\0'){ // Uses '' as "" references a string
+            result.num = parsed_input;
+            result.error_code = OK;
+            return result; 
+        }else{
+            result.num = -1;
+            result.error_code = STRTOL_CHAR_JUNK;
+            return result;
+        }
+    } 
 
 }
