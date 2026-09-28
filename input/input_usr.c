@@ -34,17 +34,20 @@ struct output get_input(void) {
     So we check directly if strtol has done anything by comparing endptr with line.
     */
 
+    // Checks if endptr hasn't moved (meaning that it didn't work properly)
     if (endptr == line) {
         free(line);
         result.num = -1;
         result.error_code = STRTOL_RUN_ERROR;
         return result;
-    }else if (errno == ERANGE && (parsed_input == LONG_MAX || parsed_input == LONG_MIN) || (errno != 0 && parsed_input == 0)){
+    } // Checks for underflow/overflow
+    else if (errno == ERANGE && (parsed_input == LONG_MAX || parsed_input == LONG_MIN) || (errno != 0 && parsed_input == 0)){
         free(line);
         result.num = -1;
         result.error_code = OVERFLOW;
         return result;
-    }else{
+    } // Last case: endptr has moved and either it has reached the end (\n, \0) or has found junk (extra letters) on its input
+    else{
         free(line);
         if (*endptr == '\n' || *endptr == '\0'){ // Uses '' as "" references a string
             result.num = parsed_input;
