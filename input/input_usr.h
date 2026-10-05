@@ -1,6 +1,17 @@
 #ifndef INPUT_USR_H
 #define INPUT_USR_H
 
-int get_input(void);
+enum state {OVERFLOW, GETLINE_RUN_ERROR, STRTOL_RUN_ERROR, OK, USER_EOF, STRTOL_CHAR_JUNK};
+union result {
+    long num;
+    char *string;
+};
+struct output{
+    union result out;
+    enum state error_code;
+};
+
+struct output get_string(void);
+struct output get_num(void);
 
 #endif
