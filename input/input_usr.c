@@ -16,7 +16,7 @@ struct output get_string(void) {
         free(line);
         result.out.string = NULL;
         if (feof(stdin)){
-            clearerr(stdin);
+            clearerr(stdin); // Allows inputs by removing EOF indicator in line
             result.error_code = USER_EOF;
             return result;
         }else{
