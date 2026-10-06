@@ -25,7 +25,7 @@ struct output get_string(void) {
         }
     }
     result.out.string = line;
-    result.error_code = OK;
+    result.error_code = INPUT_OK;
     return result;
 }
 
@@ -35,7 +35,7 @@ struct output get_num(void){
     struct output result; 
     struct output input = get_string();
 
-    if (input.error_code == OK){
+    if (input.error_code == INPUT_OK){
         errno = 0;
         parsed_input = strtol(input.out.string, &endptr, 10);
 
@@ -55,14 +55,14 @@ struct output get_num(void){
         else if (((errno == ERANGE) && (parsed_input == LONG_MAX || parsed_input == LONG_MIN)) || (errno != 0 && parsed_input == 0)){
             free(input.out.string);
             result.out.num = -1;
-            result.error_code = OVERFLOW;
+            result.error_code = STRTOL_OVERFLOW;
             return result;
         } // Last case: endptr has moved and either it has reached the end (\n, \0) or has found junk (extra letters) on its input
         else{
             if (*endptr == '\n' || *endptr == '\0'){ // Uses '' as "" references a string
                 free(input.out.string);
                 result.out.num = parsed_input;
-                result.error_code = OK;
+                result.error_code = INPUT_OK;
                 return result; 
             }else{
                 free(input.out.string);
