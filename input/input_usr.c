@@ -16,6 +16,7 @@ struct output get_string(void) {
         free(line);
         result.out.string = NULL;
         if (feof(stdin)){
+            clearerr(stdin);
             result.error_code = USER_EOF;
             return result;
         }else{
